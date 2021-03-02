@@ -1,0 +1,12 @@
+{
+    "name": "hexlet/code",
+    "description": "PHP Project Level 2",
+    "type": "Project",
+    "authors": [
+        {
+            "name": "aktm",
+            "email": "aktm@yandex.ru"
+        }
+    ],
+    "require": {}
+}
