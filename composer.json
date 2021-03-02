@@ -1,12 +1,14 @@
 {
     "name": "hexlet/code",
     "description": "PHP Project Level 2",
-    "type": "Project",
+    "type": "project",
     "authors": [
         {
             "name": "aktm",
             "email": "aktm@yandex.ru"
         }
     ],
-    "require": {}
+    "require": {
+        "docopt/docopt": "^1.0"
+    }
 }
