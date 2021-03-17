@@ -2,8 +2,6 @@
 
 namespace Differ;
 
-use Illuminate\Support\Collection;
-
 const MISS_SIGN   = "  -";
 const EXCEED_SIGN = "  +";
 const EXIST_SIGN  = "   ";
@@ -26,20 +24,18 @@ function genDiff()
 
   $args = \Docopt::handle($doc, ['version' => 'Generate diff v.0.1']);
 
-  if(isset($args['<firstFile>']) && isset($args['<secondFile>'])) {
-    startGenDiff($args['<firstFile>'], $args['<secondFile>']);
-  }
+  makeGenDiff($args['<firstFile>'], $args['<secondFile>']);
 }
 
-function startGenDiff($fileName1, $fileName2)
+function makeGenDiff($fileName1, $fileName2)
 {
-  $json1 = file_get_contents(__DIR__ . "/{$fileName1}");
-  $json2 = file_get_contents(__DIR__ . "/{$fileName2}");
+  $json1 = file_get_contents(__DIR__ . "/{$fileName1}"); //$json1 = file_get_contents(realpath($fileName1));
+  $json2 = file_get_contents(__DIR__ . "/{$fileName2}"); //$json2 = file_get_contents(realpath($fileName2));
 
-  print_r(generateDiffOutput($json1, $json2));
+  print_r(getJsonDiff($json1, $json2));
 }
 
-function generateDiffOutput($json1, $json2)
+function getJsonDiff($json1, $json2)
 {
   $data1 = json_decode($json1, true);
   $data2 = json_decode($json2, true);
@@ -57,27 +53,29 @@ function generateDiffOutput($json1, $json2)
   return $dif;
 }
 
-function getMissPrefix($key, $dataSet)
+function buildDiff($key, $data1, $data2, $mergedData)
 {
-  return !array_key_exists($key, $dataSet[0]) ? MISS_SIGN : "";
-}
-
-function getExceedPrefix($key, $dataSet)
-{
-  return !array_key_exists($key, $dataSet[1]) ? EXCEED_SIGN : "";
-}
-
-function getExistPrefix($key, $dataSet)
-{
-  return $dataSet[0][$key] === $dataSet[1][$key] ? EXIST_SIGN : "";
-}
-
-function buildDiff($key, $dataSet, $mergedData)
-{
-  $prefix = getExceedPrefix($key, $dataSet) . getMissPrefix($key, $dataSet) . @getExistPrefix($key, $dataSet);
+  $prefix = getExceedPrefix($key, $data1) .
+    getMissPrefix($key, $data2) .
+    @getExistPrefix($key, $data1, $data2);
 
   return $prefix ? 
     "$prefix $key: ". json_encode($mergedData[$key])."\n" :
-    MISS_SIGN . " $key: " . json_encode($dataSet[0][$key]) ."\n" .
-    EXCEED_SIGN . " $key: " . json_encode($dataSet[1][$key]). "\n";
+    MISS_SIGN . " $key: " . json_encode($data1[$key]) ."\n" .
+    EXCEED_SIGN . " $key: " . json_encode($data2[$key]). "\n";
+}
+
+function getMissPrefix($key, $data)
+{
+  return !array_key_exists($key, $data) ? MISS_SIGN : "";
+}
+
+function getExceedPrefix($key, $data)
+{
+  return !array_key_exists($key, $data) ? EXCEED_SIGN : "";
+}
+
+function getExistPrefix($key, $data1, $data2)
+{
+  return $data1[$key] === $data2[$key] ? EXIST_SIGN : "";
 }
