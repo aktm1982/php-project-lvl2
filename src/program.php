@@ -47,7 +47,7 @@ function getJsonDiff($json1, $json2)
   $dif = "";
 
   foreach(array_keys($mergedData) as $key) {
-    $dif .= buildDiff($key, $dataSet, $mergedData);
+    $dif .= buildDiff($key, $data1, $data2, $mergedData);
   }
   
   return $dif;
