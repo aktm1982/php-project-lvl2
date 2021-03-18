@@ -2,9 +2,9 @@
 
 namespace Differ;
 
-const MISS_SIGN   = "  -";
-const EXCEED_SIGN = "  +";
-const EXIST_SIGN  = "   ";
+const MISS_PREFIX   = "  - ";
+const EXCEED_PREFIX = "  + ";
+const EXIST_PREFIX  = "    ";
 
 function genDiff()
 {
@@ -42,40 +42,41 @@ function getJsonDiff($json1, $json2)
 
   $mergedData = array_merge($data1, $data2);
   ksort($mergedData);
+  
+  $fullMergedData = [];
+  foreach (array_keys($mergedData) as $key) {
+    $next = [];
+    $next[] = $data1[$key] ?? " ";
+    $next[] = $data2[$key] ?? " ";
+    $fullMergedData[$key] = $next;
+  }
 
-  $dataSet = [$data1, $data2];
   $dif = "";
-
-  foreach(array_keys($mergedData) as $key) {
-    $dif .= buildDiff($key, $data1, $data2, $mergedData);
+  foreach($fullMergedData as $key => $element) {
+    $dif .= buildDiffOutput($key, $element);
   }
   
   return $dif;
 }
 
-function buildDiff($key, $data1, $data2, $mergedData)
+function buildDiffOutput($key, $element)
 {
-  $prefix = getExceedPrefix($key, $data1) .
-    getMissPrefix($key, $data2) .
-    @getExistPrefix($key, $data1, $data2);
-
-  return $prefix ? 
-    "$prefix $key: ". json_encode($mergedData[$key])."\n" :
-    MISS_SIGN . " $key: " . json_encode($data1[$key]) ."\n" .
-    EXCEED_SIGN . " $key: " . json_encode($data2[$key]). "\n";
+  return getExceedString($key, $element) . getMissString($key, $element) . getExistString($key, $element) ?:
+    MISS_PREFIX . "$key: $element[0]\n" . EXCEED_PREFIX . "$key: $element[1]\n";
 }
 
-function getMissPrefix($key, $data)
+
+function getExceedString($key, $element)
 {
-  return !array_key_exists($key, $data) ? MISS_SIGN : "";
+  return $element[0] === " " ? (EXCEED_PREFIX . "$key: " . json_encode($element[1]) . "\n") : null;
 }
 
-function getExceedPrefix($key, $data)
+function getMissString($key, $element)
 {
-  return !array_key_exists($key, $data) ? EXCEED_SIGN : "";
+  return $element[1] === " " ? (MISS_PREFIX . "$key: " . json_encode($element[0]) . "\n") : null;
 }
 
-function getExistPrefix($key, $data1, $data2)
+function getExistString($key, $element)
 {
-  return $data1[$key] === $data2[$key] ? EXIST_SIGN : "";
+  return $element[0] === $element[1] ? (EXIST_PREFIX . "$key: " . json_encode($element[0]) . "\n") : null;
 }
